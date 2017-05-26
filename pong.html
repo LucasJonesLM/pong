@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pong</title>
+    <style>
+       canvas {
+           width: 800px;
+           height: 500px;
+           border: solid black 2px;
+       }
+   </style>
+  </head>
+  <body>
+    <div style="display: inline-block; font-size: 35px;">
+      <div class="">Player 1 Score:</div>
+      <div id = "p1">0</div>
+    </div>
+    <div style="display: inline-block; font-size: 35px; margin-left: 375px">
+      <div class="">Player 2 Score:</div>
+      <div id = "p2">0</div>
+    </div>
+    <br>
+    <div id = "field" style="font-size: 100px">
+      <canvas id="canvas"></canvas>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 500;
+    var x = 400;
+    var y = 250;
+    var maxSpeed = 4;
+    var minSpeed = 1;
+    var inc = Math.floor(Math.random()*maxSpeed+1)+minSpeed;;
+    var hitBottom = Math.floor(Math.random()*2+1);
+    var hitRight = Math.floor(Math.random()*2+1);
+    var p1Move = 250;
+    var p2Move = 250;
+    var paddleLength = 150;
+    var paddleSpeed = 4;
+    var b1 = document.getElementsByTagName('body')[0];
+    var field = document.getElementById("field");
+    var p1 = document.getElementById("p1");
+    var p2 = document.getElementById("p2");
+    var p1Score = 0;
+    var p2Score = 0;
+    var player = "";
+    var keys = {
+      up: false,
+      down: false,
+      a: false,
+      z: false
+    }
+    const WALL_HIT = new Audio("hit.wav");
+    const SCORE_POINT = new Audio("score.wav");
+    const WINNER = new Audio("winner.wav");
+    const P1_HIT = new Audio("p1hit.wav");
+    const P2_HIT = new Audio("p2hit.wav");
+
+    b1.addEventListener('keydown',function(evt){
+      if (evt.keyCode === 38 && p2Move >= paddleLength) {
+        keys.up = true;
+      }
+      if (evt.keyCode === 40 && p2Move <= (canvas.height)) {
+        keys.down = true;
+      }
+      if (evt.keyCode === 65 && p1Move >= 0) {
+        keys.a = true;
+      }
+      if (evt.keyCode === 90 && p1Move <= (canvas.height - paddleLength)) {
+        keys.z = true;
+      }
+
+      b1.addEventListener('keyup',function(evt){
+        if (evt.keyCode === 38) {
+          keys.up = false;
+        }
+        if (evt.keyCode === 40) {
+          keys.down = false;
+        }
+        if (evt.keyCode === 65) {
+          keys.a = false;
+        }
+        if (evt.keyCode === 90) {
+          keys.z = false;
+        }
+      });
+
+    });
+
+    function winner(playername){
+      field.innerHTML = playername + " is the WINNER!";
+      inc = 0;
+      WINNER.play();
+    }
+
+        function draw(dt) {
+            // clear screen
+           ctx.clearRect(0, 0, canvas.width, canvas.height);
+           // Draw paddles
+           if (keys.up && p2Move >= paddleLength) {
+             p2Move -= paddleSpeed;
+           }
+           if (keys.down && p2Move <= (canvas.height)) {
+             p2Move += paddleSpeed;
+           }
+           if (keys.a && p1Move >= 0) {
+             p1Move -= paddleSpeed;
+           }
+           if (keys.z && p1Move <= (canvas.height - paddleLength)) {
+             p1Move += paddleSpeed;
+           }
+           //Player 1 paddle
+           ctx.fillStyle = 'red';
+           ctx.fillRect(20, p1Move, 30, paddleLength);
+           //Player 2 paddle
+           ctx.fillStyle = 'red';
+           ctx.fillRect(780, p2Move, -30, -paddleLength);
+            // draw cirle
+            ctx.beginPath();
+            ctx.fillStyle = 'green';
+            ctx.arc(x,y,10,0,2*Math.PI);
+            ctx.fill();
+            if (y >= canvas.height) {
+              WALL_HIT.play();
+              hitBottom = 1;
+              inc +=.25;
+            }
+            if (y <= 0) {
+              WALL_HIT.play();
+              hitBottom = 0;
+              inc +=.25;
+            }
+            if (x >= canvas.width){
+              p1Score++;
+              p1.innerHTML = p1Score;
+              x = 400;
+              y = 250;
+              inc = 2;
+              if (p1Score === 5) {
+                winner("Player 1");
+              }else {
+                SCORE_POINT.play();
+              }
+            }
+            if (x>=750 && y<=p2Move && y>=(p2Move-paddleLength)) {
+              P2_HIT.play();
+              hitRight = 1;
+              inc +=.25;
+            }
+            if (x <= 0) {
+              p2Score++;
+              p2.innerHTML = p2Score;
+              x = 400;
+              y = 250;
+              inc = 2;
+              if (p2Score === 5) {
+                winner("Player 2");
+              }else {
+                SCORE_POINT.play();
+              }
+            }
+            if (x<=50 && y>=p1Move && y<=(p1Move+paddleLength)) {
+              P1_HIT.play();
+              hitRight = 0;
+              inc +=.25;
+            }
+
+            if (hitBottom === 1) {
+              y -= inc;
+            }else {
+              y += inc;
+            }
+            if (hitRight === 1) {
+              x -= inc;
+            }else {
+              x += inc;
+            }
+
+            window.requestAnimationFrame(draw);
+        }
+
+        window.requestAnimationFrame(draw);
+
+  </script>
+</html>
